@@ -58,6 +58,9 @@ extern int errno;
 #ifdef HAVE_PROCESS_H
 #include <process.h>
 #endif
+#ifdef HAVE_SPAWN_H
+#include <spawn.h>
+#endif
 
 #ifdef vfork /* Autoconf may define this to fork for us. */
 # define VFORK_STRING "fork"
@@ -366,7 +369,97 @@ pex_unix_close (struct pex_obj *obj ATTRIBUTE_UNUSED, int fd)
 
 /* Execute a child.  */
 
-#if defined(HAVE_SPAWNVE) && defined(HAVE_SPAWNVPE)
+#if defined(HAVE_POSIX_SPAWN)
+/* Implementation of pex->exec_child using the posix_spawn operation.  */
+
+static pid_t
+pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
+		     char * const * argv, char * const * env,
+                     int in, int out, int errdes,
+		     int toclose, const char **errmsg, int *err)
+{
+  posix_spawn_file_actions_t file_actions;
+  pid_t pid;
+  int ret;
+
+  *errmsg = "posix_spawn";
+  ret = posix_spawn_file_actions_init (&file_actions);
+  if (ret != 0)
+    goto error;
+  if (in != STDIN_FILE_NO)
+    {
+      ret = posix_spawn_file_actions_adddup2 (&file_actions, in, STDIN_FILE_NO);
+      if (ret != 0)
+        goto error;
+      ret = posix_spawn_file_actions_addclose (&file_actions, in);
+      if (ret != 0)
+        goto error;
+    }
+  if (out != STDOUT_FILE_NO)
+    {
+      ret = posix_spawn_file_actions_adddup2 (&file_actions, out, STDOUT_FILE_NO);
+      if (ret != 0)
+        goto error;
+      ret = posix_spawn_file_actions_addclose (&file_actions, out);
+      if (ret != 0)
+        goto error;
+    }
+  if ((flags & PEX_STDERR_TO_STDOUT) != 0)
+    {
+      ret = posix_spawn_file_actions_adddup2 (&file_actions, STDOUT_FILE_NO, STDERR_FILE_NO);
+      if (ret != 0)
+        goto error;
+    }
+  else if (errdes != STDERR_FILE_NO)
+    {
+      ret = posix_spawn_file_actions_adddup2 (&file_actions, errdes, STDERR_FILE_NO);
+      if (ret != 0)
+        goto error;
+      ret = posix_spawn_file_actions_addclose (&file_actions, errdes);
+      if (ret != 0)
+        goto error;
+    }
+  if (toclose >= 0)
+    {
+      ret = posix_spawn_file_actions_addclose (&file_actions, toclose);
+      if (ret != 0)
+        goto error;
+    }
+  if (env == NULL)
+    env = environ;
+  if ((flags & PEX_SEARCH) != 0)
+    ret = posix_spawnp (&pid, executable, &file_actions, NULL, argv, env);
+  else
+    ret = posix_spawn (&pid, executable, &file_actions, NULL, argv, env);
+  if (ret != 0)
+    goto error;
+  posix_spawn_file_actions_destroy(&file_actions);
+
+  *errmsg = "close";
+  if (in != STDIN_FILE_NO && close (in) < 0)
+    {
+      ret = errno;
+      goto error;
+    }
+  if (out != STDOUT_FILE_NO && close (out) < 0)
+    {
+      ret = errno;
+      goto error;
+    }
+  if (errdes != STDERR_FILE_NO && close (errdes) < 0)
+    {
+      ret = errno;
+      goto error;
+    }
+
+  return pid;
+
+ error:
+  *err = ret;
+  return (pid_t) -1;
+}
+
+#elif defined(HAVE_SPAWNVE) && defined(HAVE_SPAWNVPE)
 /* Implementation of pex->exec_child using the Cygwin spawn operation.  */
 
 /* Subroutine of pex_unix_exec_child.  Move OLD_FD to a new file descriptor
