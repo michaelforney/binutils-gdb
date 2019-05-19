@@ -854,7 +854,9 @@ union _bfd_doprnt_args
   long l;
   long long ll;
   double d;
+#if defined (__GNUC__) || defined (HAVE_LONG_DOUBLE)
   long double ld;
+#endif
   void *p;
   enum
   {
@@ -863,7 +865,9 @@ union _bfd_doprnt_args
     Long,
     LongLong,
     Double,
+#if defined (__GNUC__) || defined (HAVE_LONG_DOUBLE)
     LongDouble,
+#endif
     Ptr
   } type;
 };
@@ -1339,9 +1343,11 @@ error_handler_internal (const char *fmt, va_list ap)
 	case Double:
 	  args[i].d = va_arg (ap, double);
 	  break;
+#if defined (__GNUC__) || defined (HAVE_LONG_DOUBLE)
 	case LongDouble:
 	  args[i].ld = va_arg (ap, long double);
 	  break;
+#endif
 	case Ptr:
 	  args[i].p = va_arg (ap, void *);
 	  break;
