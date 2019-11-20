@@ -1,3 +1,8 @@
+2019-11-19  Michael Forney  <mforney@mforney.org>
+
+	* ctf-impl.h: Provide fallback for _libctf_printflike_,
+	_libctf_unlikely_, _libctf_unused_, and _libctf_malloc_ macros.
+
 2020-02-01  Nick Clifton  <nickc@redhat.com>
 
 	Binutils 2.34 release.
