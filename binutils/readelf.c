@@ -173,6 +173,15 @@
 #define offsetof(TYPE, MEMBER) ((size_t) &(((TYPE *) 0)->MEMBER))
 #endif
 
+/* Needed for static inline functions defined by bfd.h. */
+asection _bfd_std_section[4];
+
+unsigned int
+bfd_octets_per_byte (const bfd *abfd, const asection *sec)
+{
+  return 0;
+}
+
 typedef struct elf_section_list
 {
   Elf_Internal_Shdr *        hdr;

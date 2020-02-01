@@ -43,6 +43,15 @@
 #include "safe-ctype.h"
 #include "filenames.h"
 
+/* Needed for static inline functions defined by bfd.h. */
+asection _bfd_std_section[4];
+
+unsigned int
+bfd_octets_per_byte (const bfd *abfd, const asection *sec)
+{
+  return 0;
+}
+
 char * program_name = "elfedit";
 static long archive_file_offset;
 static unsigned long archive_file_size;
