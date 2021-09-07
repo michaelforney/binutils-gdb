@@ -868,7 +868,6 @@ union _bfd_doprnt_args
   long l;
   long long ll;
   double d;
-  long double ld;
   void *p;
   enum
   {
@@ -877,7 +876,6 @@ union _bfd_doprnt_args
     Long,
     LongLong,
     Double,
-    LongDouble,
     Ptr
   } type;
 };
@@ -1063,7 +1061,7 @@ _bfd_doprnt (FILE *stream, const char *format, union _bfd_doprnt_args *args)
 		if (wide_width == 0)
 		  PRINT_TYPE (double, d);
 		else
-		  PRINT_TYPE (long double, ld);
+		  abort();
 	      }
 	      break;
 	    case 's':
@@ -1280,7 +1278,7 @@ _bfd_doprnt_scan (const char *format, union _bfd_doprnt_args *args)
 		if (wide_width == 0)
 		  arg_type = Double;
 		else
-		  arg_type = LongDouble;
+		  abort();
 	      }
 	      break;
 	    case 's':
@@ -1330,9 +1328,6 @@ error_handler_internal (const char *fmt, va_list ap)
 	  break;
 	case Double:
 	  args[i].d = va_arg (ap, double);
-	  break;
-	case LongDouble:
-	  args[i].ld = va_arg (ap, long double);
 	  break;
 	case Ptr:
 	  args[i].p = va_arg (ap, void *);
