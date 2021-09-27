@@ -1285,31 +1285,15 @@ extern asection _bfd_std_section[4];
 /* Pointer to the indirect section.  */
 #define bfd_ind_section_ptr (&_bfd_std_section[3])
 
-static inline bool
-bfd_is_und_section (const asection *sec)
-{
-  return sec == bfd_und_section_ptr;
-}
+#define bfd_is_und_section(sec) ((sec) == bfd_und_section_ptr)
+#define bfd_is_abs_section(sec) ((sec) == bfd_abs_section_ptr)
+#define bfd_is_ind_section(sec) ((sec) == bfd_ind_section_ptr)
 
-static inline bool
-bfd_is_abs_section (const asection *sec)
-{
-  return sec == bfd_abs_section_ptr;
-}
-
-static inline bool
-bfd_is_ind_section (const asection *sec)
-{
-  return sec == bfd_ind_section_ptr;
-}
-
-static inline bool
-bfd_is_const_section (const asection *sec)
-{
-  return (sec >= _bfd_std_section
-          && sec < _bfd_std_section + (sizeof (_bfd_std_section)
-                                       / sizeof (_bfd_std_section[0])));
-}
+#define bfd_is_const_section(SEC)              \
+ (   ((SEC) == bfd_abs_section_ptr)            \
+  || ((SEC) == bfd_und_section_ptr)            \
+  || ((SEC) == bfd_com_section_ptr)            \
+  || ((SEC) == bfd_ind_section_ptr))
 
 /* Return TRUE if input section SEC has been discarded.  */
 static inline bool
