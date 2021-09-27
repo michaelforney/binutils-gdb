@@ -1594,7 +1594,6 @@ ctf_link_shuffle_syms (ctf_dict_t *fp)
 
   while ((err = ctf_dynhash_next (fp->ctf_dynsyms, &i, &name_, &sym_)) == 0)
     {
-      const char *name = (const char *) name;
       ctf_link_sym_t *symp = (ctf_link_sym_t *) sym_;
 
       if (!ctf_assert (fp, symp->st_symidx <= fp->ctf_dynsymmax))
